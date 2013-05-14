@@ -19,7 +19,7 @@ const int   TEXTURE_HEIGHT  = 480;
 
 const int   WINDOW_WIDTH   = 800;  // 
 const int   WINDOW_HEIGHT  = 600;
-GLfloat blanco[4] = {1.0,1.0,1.0,1.0};
+
 bool useShader=false , useDisplacement = false;
 bool fboSupported = false;
 bool fboUsed = false;
@@ -33,9 +33,14 @@ GLuint projMatrixLoc, viewMatrixLoc;
 const char* varyings[4] = {"vPosition", "vNormal", "vTexCoord","vColor"};
 float projMatrix[16];
 float viewMatrix[16];
-float eyeX = 0.0, eyeY = 5.0, eyeZ = 10.0;
-float dirX = 0.0, dirY = 5.0, dirZ = 0.0;
 
+float eyeX = 0.0, eyeY = 5.0, eyeZ = 10.0;
+float dirX = 0.0, dirY = 5.0, dirZ = -10.0;
+
+GLfloat blanco[4] = {1.0,1.0,1.0,1.0};
+GLfloat emission[4] = {1.0,1.0,1.0,0.0};
+GLfloat negro[4] = {0.0,0.0,0.0,1.0};
+GLfloat gris[4] = {0.3,0.3,0.3,1.0};
 GLfloat v1[] = {10,10,10}; 
 GLfloat v2[] = {10,10,-10}; 
 GLfloat v3[] = {10,0,-10}; 
@@ -97,10 +102,19 @@ void initTexture()
 	initRenderbufferTexture();
 }
 
+void setTheMaterial(const GLfloat *emission, const GLfloat *diffuse)
+{
+  glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+  glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+  
+}
+
 void table()
 {
+	glEnable(GL_TEXTURE_2D);	
 	glBindTexture(GL_TEXTURE_2D, textures[3]);
 	 glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	 setTheMaterial(negro,blanco);
 	  /*
 		6------------4
 	   /|           /|
@@ -355,6 +369,7 @@ void table()
 	glTexCoord2f(1.0, 1.0); glVertex3f(1.5, -1.0, 3.0); //V1
 	glEnd();	
 	glPopAttrib();
+	glDisable(GL_TEXTURE_2D);
 }
 
 void initLights()
@@ -363,19 +378,20 @@ void initLights()
  
   glEnable(GL_LIGHT0);
   static const GLfloat lightPos[4] = { 0.0f, 9.98f, 0.0f, 1.0f };
-  GLfloat ambient_light[] = { 0.1, 0.1, 0.1, 1.0 };
+  GLfloat ambient_light[] = { 0.0, 0.0, 0.0, 1.0 };
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
   glLightfv(GL_LIGHT0, GL_AMBIENT,ambient_light);
+  
+  GLfloat lmodel_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
+  glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+	
+  /*glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 2.0);
+  glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 1.0);
+  glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0.5);*/
 
   }
 
-void setTheMaterial(const GLfloat *ambient, const GLfloat *diffuse, const GLfloat *specular , const GLfloat shininess )
-{
-  glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
-  //glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
-  //glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
-  //glMaterialf(GL_FRONT, GL_SHININESS, shininess);
-}
+
 void initScene()
 {
 	glShadeModel(GL_SMOOTH);                    // shading mathod: GL_SMOOTH or GL_FLAT
@@ -409,28 +425,12 @@ void drawScene()
   glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
   glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
   
-  
-  glPushMatrix();
-  glColor3f(1.0,1.0,1.0);
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  
-  setTheMaterial(blanco,blanco,blanco,100);
-  glTranslatef(0.0,-0.05,0.0);
-  glScalef(0.2,1.0,0.2);
-  glBegin(GL_QUADS);
-  glVertex3fv(v1);
-  glVertex3fv(v6);
-  glVertex3fv(v5);
-  glVertex3fv(v2);
-  glEnd();
-  
-  glPopAttrib();
-  glPopMatrix();
-  
+ 
   glEnable(GL_TEXTURE_2D);
   //PISO
   glBindTexture(GL_TEXTURE_2D, textures[0]);
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  //---1
+  setTheMaterial(negro,blanco);
   glColor3f(1.0,1.0,1.0);
   glBegin(GL_QUADS);
   glTexCoord2f(1.0,0.0); glVertex3fv(v4);
@@ -438,11 +438,12 @@ void drawScene()
   glTexCoord2f(0.0,1.0); glVertex3fv(v8);
   glTexCoord2f(0.0,0.0); glVertex3fv(v7);
   glEnd();     
-  glPopAttrib();
+  glPopAttrib(); //--1
    
   //Arriba
   glBindTexture(GL_TEXTURE_2D, textures[2]);
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);//--2
+  setTheMaterial(negro,blanco);
   glColor3f(1.0,1.0,1.0);
   glBegin(GL_QUADS);
   glTexCoord2f(0.0,0.0); glVertex3fv(v1);
@@ -450,11 +451,12 @@ void drawScene()
   glTexCoord2f(1.0,1.0); glVertex3fv(v5);
   glTexCoord2f(0.0,1.0); glVertex3fv(v2);
   glEnd();
-  glPopAttrib();
+  glPopAttrib(); //--2
   //textura paredes
   //Atras
   glBindTexture(GL_TEXTURE_2D, textures[1]);
-  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //--3
+  setTheMaterial(negro,blanco);
   glColor3f(1.0,1.0,1.0);
   glBegin(GL_QUADS);
   glTexCoord2f(1.0,1.0); glVertex3fv(v2);
@@ -483,8 +485,10 @@ void drawScene()
   glTexCoord2f(1.0,1.0); glVertex3fv(v5);
   glTexCoord2f(0.0,1.0); glVertex3fv(v6);
   glEnd();
-  glPopAttrib();
-  
+  glPopAttrib(); //--3
+  glDisable(GL_TEXTURE_2D);
+  /*MESAS*/
+ 
   glPushMatrix();
   glTranslatef(-7.0f, 3.5f, 0.0f);
   glScalef(1.0f, 1.0f, 0.5f); 
@@ -496,11 +500,13 @@ void drawScene()
   glScalef(1.0f, 1.0f, 0.5f); 
   table();
   glPopMatrix();  
+  /*MESAS*/
   
-  glDisable(GL_TEXTURE_2D);
+  
   
   glPushMatrix();
     glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   setTheMaterial(negro,blanco);
   glColor3f(1.0,0.0,1.0);
    glTranslatef(7.0f,4.0f,-1.0f);
    glutSolidSphere(0.5,30,30);
@@ -509,11 +515,33 @@ void drawScene()
   
    glPushMatrix();
      glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-   glColor3f(0.0,1.0,1.0);
+	setTheMaterial(negro,blanco);
+	glColor3f(0.0,1.0,1.0);
     glTranslatef(-7.0f,4.0f,0.0f);
     glutSolidSphere(0.5,30,30);
     glPopAttrib();
    glPopMatrix();
+   
+  glPushMatrix();
+  //glDisable(GL_COLOR_MATERIAL);
+  glColor3f(1.0,0.0,1.0);
+  glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  setTheMaterial(emission,blanco);
+  glTranslatef(0.0,-0.05,0.0);
+  glScalef(0.2,1.0,0.2);
+  glBegin(GL_QUADS);
+  glVertex3fv(v1);
+  glVertex3fv(v6);
+  glVertex3fv(v5);
+  glVertex3fv(v2);
+  glEnd();
+  
+  glPopAttrib();
+  //glEnable(GL_COLOR_MATERIAL);
+  glPopMatrix();
+  
+  
 }
 
 void idle()
@@ -535,8 +563,8 @@ void renderToTexture()
 	
 	glLoadIdentity();
 	gluPerspective(90.0f, (float)(TEXTURE_WIDTH)/TEXTURE_HEIGHT, 1.0f, 100.0f);
-	gluLookAt(0.0f,5.0f,-eyeZ,
-	          dirX,dirY,dirZ,
+	gluLookAt(0.0f,5.0f,-10.0,
+	          dirX,dirY,-dirZ,
 	          0.0f,1.0f,0.0f);
 	
 	glMatrixMode(GL_MODELVIEW);
@@ -580,6 +608,7 @@ void renderToWindow()
  glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texture4Render);
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  setTheMaterial(gris,blanco);
   glTranslatef(0.0,2.5,-4.9);
   glScalef(0.5,0.5,0.5);
   glBegin(GL_QUADS);
@@ -615,10 +644,10 @@ void keyboard(unsigned char key, int x, int y)
       break;
     case 's':
       break;
-    case 'l':
+    case 'L':
       glDisable(GL_LIGHTING);
       break;      
-    case 'h':
+    case 'l':
       glEnable(GL_LIGHTING);
       break;    
     case 'e':
