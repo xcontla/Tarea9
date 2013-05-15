@@ -11,8 +11,10 @@
 #include "texture.hpp"
 #include "framebuffer.h"
 
-int screen_width, screen_height;
+void mouseCB(int button, int stat, int x, int y);
+void mouseMotionCB(int x, int y);
 
+int screen_width, screen_height;
 const int   TEXTURE_WIDTH   = 640;  // NOTE: texture size cannot be larger than WINDOW SIZE
 const int   TEXTURE_HEIGHT  = 480;
 
@@ -27,6 +29,13 @@ const int numTextures = 5;
 GLuint textures[numTextures];
 GLuint texture4Render, tID, framebuffer, fboID,renderBuffer, rboID;
 float angle = 0.0;
+
+bool mouseLeftDown;
+bool mouseRightDown;
+float mouseX, mouseY;
+float cameraAngleX;
+float cameraAngleY;
+float cameraDistance;
 
 GLuint projMatrixLoc, viewMatrixLoc;
 const char* varyings[4] = {"vPosition", "vNormal", "vTexCoord","vColor"};
@@ -568,6 +577,8 @@ void renderToTexture()
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
+	glRotatef(-cameraAngleX, 1, 0, 0);   // pitch
+	glRotatef(-cameraAngleY, 0, 1, 0);   // heading
 	drawScene();
 	
 	glGetDoublev(GL_PROJECTION_MATRIX, projMatrix);
@@ -602,12 +613,21 @@ void renderToWindow()
   glLoadIdentity();
   if(screen_height <= 0)
     screen_height = 1.0;
+
   gluPerspective(100.0,screen_width/screen_height,1,30.0);
+  //eyeZ = -cameraDistance;
+  // cameraDistance = -eyeZ;
   gluLookAt(eyeX,eyeY,eyeZ, //eye
 	        dirX,dirY,dirZ,  //where
 	       0.0,1.0,0.0); //up
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
+
+   // tramsform camera
+  //   glTranslatef(0, 0, -cameraDistance);
+    glRotatef(cameraAngleX, 1, 0, 0);   // pitch
+    glRotatef(cameraAngleY, 0, 1, 0);   // heading
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
   glPushMatrix();
@@ -741,6 +761,8 @@ int main(int argc, char **argv)
   glutDisplayFunc(renderToWindow);
   glutIdleFunc(idle);
   glutKeyboardFunc(keyboard);
+  glutMouseFunc(mouseCB);
+  glutMotionFunc(mouseMotionCB);
   glutMainLoop();
   
   clearSharedMem();
@@ -748,3 +770,52 @@ int main(int argc, char **argv)
   return 0;
 }
 
+
+/**
+MOUSE CALLBACKS
+*/
+
+
+
+void mouseCB(int button, int state, int x, int y)
+{
+    mouseX = x;
+    mouseY = y;
+
+    if(button == GLUT_LEFT_BUTTON)
+    {
+        if(state == GLUT_DOWN)
+        {
+            mouseLeftDown = true;
+        }
+        else if(state == GLUT_UP)
+            mouseLeftDown = false;
+    }
+
+    else if(button == GLUT_RIGHT_BUTTON)
+    {
+        if(state == GLUT_DOWN)
+        {
+            mouseRightDown = true;
+        }
+        else if(state == GLUT_UP)
+            mouseRightDown = false;
+    }
+}
+
+
+void mouseMotionCB(int x, int y)
+{
+    if(mouseLeftDown)
+    {
+        cameraAngleY += (x - mouseX);
+        cameraAngleX += (y - mouseY);
+        mouseX = x;
+        mouseY = y;
+    }
+    if(mouseRightDown)
+    {
+        cameraDistance -= (y - mouseY) * 0.2f;
+        mouseY = y;
+    }
+}
