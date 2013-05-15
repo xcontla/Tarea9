@@ -1,7 +1,6 @@
 #define GL_GLEXT_PROTOTYPES
 
 #include "glslProgram.h"
-//#include "glext.h"
 
 using namespace std;
 #define printOpenGLError() printOglError(__FILE__, __LINE__)

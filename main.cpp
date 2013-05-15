@@ -6,9 +6,8 @@
 #include <GL/gl.h>
 #include <GL/glut.h>
 #include <GL/glu.h>
-//#include "glext.h"
 #include "glInfo.h"
-#include "glslProgram.h"
+//#include "glslProgram.h"
 #include "texture.hpp"
 #include "framebuffer.h"
 
@@ -31,8 +30,11 @@ float angle = 0.0;
 
 GLuint projMatrixLoc, viewMatrixLoc;
 const char* varyings[4] = {"vPosition", "vNormal", "vTexCoord","vColor"};
-float projMatrix[16];
-float viewMatrix[16];
+GLdouble projMatrix[16];
+GLdouble modelMatrix[16];
+GLint viewMatrix[4];
+
+double winX, winY, winZ;
 
 float eyeX = 0.0, eyeY = 5.0, eyeZ = 10.0;
 float dirX = 0.0, dirY = 5.0, dirZ = -10.0;
@@ -41,12 +43,12 @@ GLfloat blanco[4] = {1.0,1.0,1.0,1.0};
 GLfloat emission[4] = {1.0,1.0,1.0,0.0};
 GLfloat negro[4] = {0.0,0.0,0.0,1.0};
 GLfloat gris[4] = {0.3,0.3,0.3,1.0};
-GLfloat v1[] = {10,10,10}; 
-GLfloat v2[] = {10,10,-10}; 
+GLfloat v1[] = {10,10,10};
+GLfloat v2[] = {10,10,-10};
 GLfloat v3[] = {10,0,-10}; 
 GLfloat v4[] = {10,0,10}; 
-GLfloat v5[] = {-10,10,-10}; 
-GLfloat v6[] = {-10,10,10}; 
+GLfloat v5[] = {-10,10,-10};
+GLfloat v6[] = {-10,10,10};
 GLfloat v7[] = {-10,0,10}; 
 GLfloat v8[] = {-10,0,-10}; 
 
@@ -422,9 +424,6 @@ void drawScene()
 {
 	
   glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-  glGetFloatv(GL_PROJECTION_MATRIX, projMatrix);
-  glGetFloatv(GL_MODELVIEW_MATRIX, viewMatrix);
-  
  
   glEnable(GL_TEXTURE_2D);
   //PISO
@@ -562,15 +561,23 @@ void renderToTexture()
 	glMatrixMode(GL_PROJECTION);
 	
 	glLoadIdentity();
-	gluPerspective(90.0f, (float)(TEXTURE_WIDTH)/TEXTURE_HEIGHT, 1.0f, 100.0f);
-	gluLookAt(0.0f,5.0f,-10.0,
-	          dirX,dirY,-dirZ,
+	gluPerspective(100.0f, (float)(TEXTURE_WIDTH)/TEXTURE_HEIGHT, 1.0f, 100.0f);
+	gluLookAt(eyeX,eyeY,eyeZ + 2*(-9.9 - eyeZ),
+	          dirX,dirY,dirZ + 2*(-9.9 - dirZ),
 	          0.0f,1.0f,0.0f);
 	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	drawScene();
 	
+	glGetDoublev(GL_PROJECTION_MATRIX, projMatrix);
+	glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
+	viewMatrix[0] = 0;
+	viewMatrix[1] = 0;
+	viewMatrix[2] = screen_width;
+	viewMatrix[3] = screen_height;
+
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // unbind
 
         // trigger mipmaps generation explicitly
@@ -602,9 +609,10 @@ void renderToWindow()
   glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  
+
   glPushMatrix();
   drawScene();
+
  glEnable(GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, texture4Render);
   glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -613,15 +621,29 @@ void renderToWindow()
   glScalef(0.5,0.5,0.5);
   glBegin(GL_QUADS);
   glColor3f(1.0,1.0,1.0);
-  glTexCoord2f(0.0,1.0); glVertex3fv(v2);
-  glTexCoord2f(1.0,1.0); glVertex3fv(v5);
-  glTexCoord2f(1.0,0.0); glVertex3fv(v8);
-  glTexCoord2f(0.0,0.0); glVertex3fv(v3);
+
+  //top-right
+  gluProject(5.0, 7.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
+  glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v2);
+
+  //top-left
+  gluProject(-5.0, 7.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
+  glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v5);
+
+  //bottom-left
+  gluProject(-5.0, 2.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
+  glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v8);
+
+  //bottom-right
+  gluProject(5.0, 2.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
+  glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v3);
+
   glEnd();
   glPopAttrib();
   glPopMatrix();
   glDisable(GL_TEXTURE_2D);
   
+
   glutSwapBuffers();
   
  
@@ -682,18 +704,16 @@ void clearSharedMem()
 int main(int argc, char **argv)
 {
 	
- 
   glutInit(&argc, argv);
   
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
   glutInitWindowPosition(50, 50);
   glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-  glutCreateWindow("Modelo Iluminacion");
+  glutCreateWindow("Tarea 9");
 
  GLenum err = glewInit();
   if (GLEW_OK != err)
     {
-
       cout << "Error: " << glewGetErrorString(err) << endl;
     }
 
