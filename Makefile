@@ -1,9 +1,9 @@
 CC=g++
-CFLAGS=-c -Wall -g
-LDFLAGS=-lGLEW -lGL -lglut -lGLU -fpermissive -lpng
+CFLAGS=-c -g -Wall
+LDFLAGS=-lGLEW -lGL -lglut -lGLU -fpermissive -lpng -lm
 
 HEADERS= glext.h glInfo.h framebuffer.h textfile.h glslProgram.h texture.hpp 
-SOURCES= glInfo.cpp framebuffer.cpp textfile.cpp glslProgram.cpp main.cpp texture.cpp 
+SOURCES= glInfo.cpp framebuffer.cpp textfile.cpp glslProgram.cpp main.cpp  texture.cpp 
 
 OBJECTS=$(SOURCES:.cpp=.o)
 OBJECTSGENERA=$(SOURCESGENERA:.cpp=.o)
