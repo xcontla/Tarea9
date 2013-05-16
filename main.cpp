@@ -130,6 +130,7 @@ void table()
 	glEnable(GL_TEXTURE_2D);	
 	glBindTexture(GL_TEXTURE_2D, textures[3]);
 	 glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	 glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE);
 	 //setTheMaterial(negro,blanco);
 	  setTheMaterial(negro,blanco,blanco,negro);
 	  /*
@@ -527,7 +528,7 @@ void initLights()
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
   glLightfv(GL_LIGHT0, GL_AMBIENT,ambient_light);
   
-  GLfloat lmodel_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+  GLfloat lmodel_ambient[] = { 0.1, 0.1, 0.1, 1.0 };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
   glEnable(GL_NORMALIZE);
   }
