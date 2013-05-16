@@ -72,9 +72,9 @@ void initRenderbufferTexture()
     glBindTexture(GL_TEXTURE_2D, texture4Render);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE); // automatic mipmap generation included in OpenGL v1.4
@@ -522,12 +522,12 @@ void initLights()
 {
  
   glEnable(GL_LIGHT0);
-  static const GLfloat lightPos[4] = { 0.0f, 10.0f, 0.0f, 1.0f };
+  static const GLfloat lightPos[4] = { 0.0f, 9.95f, 0.0f, 1.0f };
   GLfloat ambient_light[] = { 0.0, 0.0, 0.0, 0.0 };
   glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
   glLightfv(GL_LIGHT0, GL_AMBIENT,ambient_light);
   
-  GLfloat lmodel_ambient[] = { 0.3, 0.3, 0.3, 1.0 };
+  GLfloat lmodel_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
   glEnable(GL_NORMALIZE);
   }
@@ -570,6 +570,7 @@ void drawScene()
   setTheMaterial(negro,blanco,blanco,negro);
   glColor3f(1.0,1.0,1.0);
   glBegin(GL_QUADS);
+  glNormal3f(0.0f, 1.0f, 0.0f);
   glTexCoord2f(1.0,0.0); glVertex3fv(v4);
   glTexCoord2f(1.0,1.0); glVertex3fv(v3);
   glTexCoord2f(0.0,1.0); glVertex3fv(v8);
@@ -583,7 +584,6 @@ void drawScene()
   setTheMaterial(negro,blanco,blanco,negro);
   glColor3f(1.0,1.0,1.0);
   glNormal3f(0.0f, -1.0f, 0.0f);
-
   glBegin(GL_QUADS);
   glTexCoord2f(0.0,0.0); glVertex3fv(v1);
   glTexCoord2f(1.0,0.0); glVertex3fv(v6);
@@ -712,6 +712,7 @@ void idle()
 
 void renderToTexture()
 {
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -778,6 +779,7 @@ void renderToWindow()
 	drawScene();
 
 	glEnable(GL_TEXTURE_2D);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glBindTexture(GL_TEXTURE_2D, texture4Render);
 	glPushAttrib(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setTheMaterial(negro,gris,blanco,negro);
