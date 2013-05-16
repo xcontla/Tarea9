@@ -734,10 +734,12 @@ void renderToTexture()
 	
 	glGetDoublev(GL_PROJECTION_MATRIX, projMatrix);
 	glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
-	viewMatrix[0] = 0;
-	viewMatrix[1] = 0;
-	viewMatrix[2] = screen_width;
-	viewMatrix[3] = screen_height;
+	glGetIntegerv(GL_VIEWPORT, viewMatrix);
+
+//	viewMatrix[0] = 0;
+//	viewMatrix[1] = 0;
+//	viewMatrix[2] = screen_width;
+//	viewMatrix[3] = screen_height;
 
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -791,19 +793,19 @@ void renderToWindow()
 	glNormal3f(0.0f, 0.0f, 1.0f);
   //top-right
 	gluProject(5.0, 7.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
-	glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v2);
+	glTexCoord2f(winX/TEXTURE_WIDTH,winY/TEXTURE_HEIGHT); glVertex3fv(v2);
 
   //top-left
 	gluProject(-5.0, 7.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
-	glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v5);
+	glTexCoord2f(winX/TEXTURE_WIDTH,winY/TEXTURE_HEIGHT); glVertex3fv(v5);
 
   //bottom-left
 	gluProject(-5.0, 2.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
-	glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v8);
+	glTexCoord2f(winX/TEXTURE_WIDTH,winY/TEXTURE_HEIGHT); glVertex3fv(v8);
 
   //bottom-right
 	gluProject(5.0, 2.5, -9.9, modelMatrix, projMatrix, viewMatrix, &winX, &winY, &winZ);
-	glTexCoord2f(winX/screen_width,winY/screen_height); glVertex3fv(v3);
+	glTexCoord2f(winX/TEXTURE_WIDTH,winY/TEXTURE_HEIGHT); glVertex3fv(v3);
 
 	glEnd();
 	glPopAttrib();
